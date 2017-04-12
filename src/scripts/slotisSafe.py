@@ -27,7 +27,7 @@ import json
 import ephem
 from roof import SLroof; myroof = SLroof()
 import time
-
+import datetime
 from slotis_device import bok
 from webWeather import kpDewPoints,  kpWind, fourMeterStatus
 # THe webWeather code is a glorified web scraper, with 
@@ -76,13 +76,14 @@ def mayallIsOpen():
 def isRaining(  ):
 	"""Get the rain status from the controllino rainbit"""
 	try:
-		s=scottSock("140.252.86.98", 5750, timeout=0.25)
+		s=scottSock("140.252.86.98", 5750)
 	
 		response = s.converse("SLOTIS CONTROLLINO1 123 REQUEST RAIN_BIT\n")
 		iresp = int(response)
 	except Exception as err:
 		print "rain bit error", err
-		iresp = 0
+		return None
+
 	if iresp == 1:
 		return False
 	else:
@@ -164,6 +165,7 @@ def main():
 	Super LOTIS dome should be open. If not it issues a close command"""
 	l_mayall_is_open = None
 	l_bok_is_open = None
+	set_slotis("scott_closed_because", 'None')
 	while 1:
 		t0=time.time()	
 		safe = True
@@ -200,8 +202,11 @@ def main():
 			safe = False
 
 		if bok_is_open == False and l_bok_is_open == True:
-			print "bok just closed"
-			safe = False
+			dt = datetime.datetime.now()
+			if dt.hour > 3 and dt.hour< 6:
+			
+				concerns.append("bok just closed")
+				safe = False
 
 		
 		#if bok_is_too_humid:
@@ -209,7 +214,7 @@ def main():
 			#safe = False
 
 		if  is_human_safe == False:
-			print "user set to unsafe"
+			concerns.append( "user set to unsafe" )
 			safe = False
 		
 		if safe:
@@ -232,9 +237,10 @@ def main():
 				if roof_inputs['closed'] == 0:
 					print "Closing the roof.", concerns
 					try:
+						set_slotis("scott_closed_because", str(concerns))
 						log(str(concerns))
 						myroof.closeRoof()
-						pass
+
 					except Exception as err:
 						print "could not close because {}".format(err)
 				else:
@@ -261,9 +267,6 @@ def main():
 		if bok_is_open != None:
 			l_bok_is_open = bok_is_open
 		
-		for n in range( len( concerns ) ):
-			
-			set_slotis('scott_concern{}'.format(n), concerns[n] )
 
 
 def log(msg):

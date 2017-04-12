@@ -22,7 +22,7 @@ use Net::Telnet;
 use Exporter qw(import);
 
 
-our @EXPORT_OK = qw( OPEN CLOSE STOP getInputs );
+our @EXPORT_OK = qw( OPEN CLOSE STOP getInputs isSafe );
 
 # This is the HTTP format string to send
 # an open close or stop command to the
@@ -73,6 +73,12 @@ my $state = 2;
 #######################################################
 sub OPEN()
 {
+	my $safety = isSafe();
+	if ( isSafe()  == 0.0 )
+	{
+		printf("not opening because ops_safe_to_open says %f\n", $safety);
+		return -1;
+	}
 	my $sock = undef;
 	$sock = Net::Telnet->new (
 				Host 		=> $cbw_host,
@@ -224,5 +230,44 @@ my $sock = undef;
 
 
 
+1;
 
- 
+
+
+# The SLOTIS status socket server.                     
+my $slotis_status_server_host = "slotis.kpno.noao.edu";
+my $slotis_status_server_port = 5135;                  
+                                                       
+
+# Sends the status information to the status server.             
+sub isSafe{                                       
+                                                                 
+  # The command to set a value in the status server.             
+  my $cmd = "";       
+  my $val = "-1.0"; 
+  my $key = "-1.0";                                          
+  # Connect to the status socket server.                         
+  my $sock = Net::Telnet->new (Host => $slotis_status_server_host,  
+                            Port =>  $slotis_status_server_port, 
+                            Errmode => "return",                 
+                            Timeout => 1,                        
+                            Binmode => 1,                        
+                            Telnetmode => 0                      
+                           );                                    
+
+	my $resp = 0.0;
+	if ( $sock ) {
+		$cmd = "get ops_safe_to_open\n";                     
+		my $rtn_status = $sock->put($cmd) if length($cmd) > 0;     
+		# put() returns 1 if all data was successfully written.    
+		# print $cmd if $debug;                                    
+		print "Error writing to status server\n" unless $rtn_status; 
+		# Returning the .EOF                                       
+		my $line = $sock->getline();
+		($key, $val) = split / /, $line;
+		
+	}                                                            
+	$sock->close() if $sock;                                       
+	undef($sock);                                                  
+	return $val;
+}
