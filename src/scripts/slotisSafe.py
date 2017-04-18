@@ -146,14 +146,14 @@ def bokIsTooHumid(  ):
 
 def isHumanSafe():
 	try:
-		status = float ( get_slotis('human_safe_to_open') )
+		status = float ( get_slotis('ops_safe_to_open') )
 		if status == 1.0:
 			retn = True
 		else:
 			retn =  False 
 
 	except Exception as err:
-		print 'human safe error', [get_slotis('human_safe_to_open')], err
+		print 'human safe error', [get_slotis('ops_safe_to_open')], err
 		retn = None
 
 	return retn
@@ -204,9 +204,9 @@ def main():
 		if bok_is_open == False and l_bok_is_open == True:
 			dt = datetime.datetime.now()
 			if dt.hour > 3 and dt.hour< 6:
-			
-				concerns.append("bok just closed")
-				safe = False
+				pass
+				#concerns.append("bok just closed")
+				#safe = False
 
 		
 		#if bok_is_too_humid:
