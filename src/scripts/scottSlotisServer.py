@@ -14,16 +14,16 @@ sys.path.append(os.path.abspath("/home/scott/git-clones/slotis-django/slotis"))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'slotis.settings'                       
 django.setup()                                                                 
 
-from status.models import metone, boltwood
-
+#from status.models import metone, boltwood
+from slotis_device.boltwood import Boltwood as boltwood
 class LatestThread( Thread ):
-	latest = {}
 	lock = Lock()
 	running = False
 	def getlatest(self):
 		try:
-			s=scottSock('localhost', 5135)
+			s=scottSock('localhost', 5135, timeout=0.25)
 			b=boltwood()
+			
 			boltwood_data = b.getdata()
 			for key, val in boltwood_data.iteritems():
 				s.converse('set boltwood_{} {}\n'.format(key, val))
@@ -46,23 +46,27 @@ class LatestThread( Thread ):
 			except Exception as err:
 				outdict['err_'+str(errnum)] = line
 				errnum+=1
+		if self.latest == None:
+			self.latest = {}
 		with self.lock:
 			self.latest.update(outdict)
 			self.latest.update({'timestamp': timezone.now().isoformat()})
 
 	def run(self):
 		self.running = True
-		t0=time.time()
+		t0=time.time()-6.0# run immediately
+		self.latest = None
 		while self.running:
 			#only update every 5 seconds
-			if time.time() - t0 > 5.0:
-				m=metone()
-				if self.latest != {}:
-					m.getdata(self.latest)
-					m.save()
-				self.getlatest()
-				t0 = time.time()
 			
+			if time.time() - t0 > 5.0:
+				#m=metone()
+				if self.latest != None:
+					pass
+					#m.getdata(self.latest)
+					#m.save()
+				t0 = time.time()
+				self.getlatest()
 			time.sleep(0.01)
 
 
@@ -72,7 +76,7 @@ class LatestThread( Thread ):
 class SlotisClient( Client ):
 	
 	def handle(self, data):
-		self.client.send(json.dumps(LatestThread.latest))
+		self.client.send(json.dumps(thr.latest))
 
 
 thr=LatestThread()

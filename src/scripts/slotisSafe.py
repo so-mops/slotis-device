@@ -28,8 +28,9 @@ import ephem
 from roof import SLroof; myroof = SLroof()
 import time
 import datetime
-from slotis_device import bok
+from slotis_device import bok, boltwood
 from webWeather import kpDewPoints,  kpWind, fourMeterStatus
+
 # THe webWeather code is a glorified web scraper, with 
 # little glory. This should be replace with an actuall weather
 # station. Like the super lotis or 90" weather stations. 
@@ -158,6 +159,11 @@ def isHumanSafe():
 
 	return retn
 
+def boltwoodSafe():
+	b=boltwood.Boltwood()
+	return b.isSafe()
+		
+
 def main():
 	
 	
@@ -176,7 +182,7 @@ def main():
 		bok_is_open = bokIsOpen()
 		#bok_is_too_humid = bokIsTooHumid()
 		is_human_safe = isHumanSafe()
-
+		boltwood_is_safe = boltwoodSafe()
 
 		instant_status = {
 			'isRaining': is_raining, 
@@ -194,7 +200,10 @@ def main():
 			concerns.append( "rain" )
 			
 
-		
+		if (boltwood_is_safe == False):
+			print "boltwood wants to close"
+			concerns.append("boltwood")
+			safe = False
 		
 		#If either dome went from open to closed we should close!
 		if mayall_is_open == False and l_mayall_is_open == True:
@@ -215,6 +224,7 @@ def main():
 
 		if  is_human_safe == False:
 			concerns.append( "user set to unsafe" )
+			print "user set to unsafe"
 			safe = False
 		
 		if safe:
