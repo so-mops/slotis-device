@@ -14,7 +14,7 @@ sys.path.append(os.path.abspath("/home/scott/git-clones/slotis-django/slotis"))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'slotis.settings'                       
 django.setup()                                                                 
 
-from status.models import metone
+from status.models import metone, boltwood
 
 class LatestThread( Thread ):
 	latest = {}
@@ -23,6 +23,10 @@ class LatestThread( Thread ):
 	def getlatest(self):
 		try:
 			s=scottSock('localhost', 5135)
+			b=boltwood()
+			boltwood_data = b.getdata()
+			for key, val in boltwood_data.iteritems():
+				s.converse('set boltwood_{} {}\n'.format(key, val))
 			resp = s.converse('all\n')
 		except Exception as err:
 			print err
