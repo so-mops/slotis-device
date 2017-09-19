@@ -32,7 +32,7 @@ class Boltwood:
 			jdata = json.loads(data)
 			jdata["roofCloseRequested"] = 0
 
-			if int( jdata["daylightADC"]) > 600:
+			if int( jdata["daylightADC"]) > 750:
 				jdata["roofCloseRequested"] = 1
 			
 			elif int( jdata["cloudCond"] ) > 2:
@@ -49,7 +49,7 @@ class Boltwood:
 		return jdata
 
 	def isSafe(self):
-		jdata = self.getdata2()
+		jdata = self.getdata()
 		
 		if jdata["roofCloseRequested"] == 1:
 			return 0
