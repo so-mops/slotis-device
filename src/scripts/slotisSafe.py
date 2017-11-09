@@ -201,7 +201,6 @@ def main():
 			
 
 		if (boltwood_is_safe == False):
-			print "boltwood wants to close"
 			concerns.append("boltwood")
 			safe = False
 		
@@ -241,11 +240,11 @@ def main():
 			except Exception as err:
 				roof_inputs = {"opened": -1, "closed": -1}
 				print "roof error", err
-			print roof_inputs
+
 			if roof_inputs['opened'] == 1:
 				#We are open so lets close
 				if roof_inputs['closed'] == 0:
-					print "Closing the roof.", concerns
+					print "Closing the roof.", concerns, time.ctime()
 					try:
 						set_slotis("scott_closed_because", str(concerns))
 						log(str(concerns))
