@@ -1,10 +1,15 @@
 from scottSock import scottSock
 import re
+import requests
+
+USER = "admin"
+PASS = "mtops"
+
 class SLroof(  ):
     def __init__( self, ip="140.252.86.97", password="bm9uZTp3ZWJyZWxheQ", port=80  ):
         self.password = password
-	self.port = port
-	self.ip = ip
+		self.port = port
+		self.ip = ip
         self.openRelay = "relay1"
         self.closeRelay = "relay2"
         self.stopRelay = "relay3"
@@ -42,7 +47,9 @@ class SLroof(  ):
     def getInputs( self ):
 	out = self.HTTPquery	
 	xmlre = re.compile("<datavalues>.*<input1state>(\d)<\/input1state>.*<input2state>(\d)<\/input2state>.*<\/datavalues>")
+	
 	resp = self.converse(out)
+	print resp
 	match = xmlre.search(resp)
 	try:
 		#parse the bits and xor them for clarity
@@ -52,6 +59,25 @@ class SLroof(  ):
 	return {"opened": isOpened, "closed": isClosed}
 	
 
+
+class SLroof2:
+
+	def __init__(self, ip="140.252.86.97", password=PASS, user=USER):
+		self.password = password
+		self.user = user
+		self.port = port
+		self.ip = ip
+        self.openRelay = "relay1"
+        self.closeRelay = "relay2"
+        self.stopRelay = "relay3"
+        #self.openRelay = 
+        self.pulse = 2
+        self.off = 0
+        self.on = 1
+        self.HTTP = "GET /state.xml?{relay}State={value} HTTP/1.1\nAuthorization: Basic "+password+"==\r\n\r\n".format(password=password)
+	self.HTTPquery = "GET /state.xml HTTP/1.1\nAuthorization: Basic bm9uZTp3ZWJyZWxheQ==\r\n\r\n";
+
+		self.http
 
 def test():
 	r=SLroof()
