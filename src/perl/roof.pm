@@ -20,29 +20,34 @@ use strict;
 use warnings;
 use Net::Telnet;
 use Exporter qw(import);
-
+use LWP::UserAgent;
+use Data::Dumper qw(Dumper);
 
 our @EXPORT_OK = qw( OPEN CLOSE STOP getInputs isSafe );
 
 # This is the HTTP format string to send
 # an open close or stop command to the
 # cbw roof.
-my $comFormatStr = "GET /state.xml?%sState=%i HTTP/1.1\nAuthorization: Basic bm9uZTp3ZWJyZWxheQ==\r\n\r\n";
 
-# This is the HTTP string to querry the state of the cbw. 
-my $querryStr =  "GET /state.xml HTTP/1.1\nAuthorization: Basic bm9uZTp3ZWJyZWxheQ==\r\n\r\n";
+
+my $cbw_host = "140.252.86.97";
+my $cbw_realm = "secure_control"; # realm of the stuff behind HTTP Auth Basic
+my $cbw_user = "admin";
+my $cbw_pass = "mtops";
+
+my $urlFormatStr = "http://".$cbw_host."/state.xml?%sState=%i";
+my $urlGetState = "http://".$cbw_host."/state.xml";
+
 
 #cbw ip address
-my $cbw_host = "140.252.86.97";
 
 # cbw port. Might be good 
-# to change thsi for 
+# to change this for 
 # security
 my $cbw_port = 80;
 
 
 my $resp;
-my $HTTP;
 
 my $openRelay  = "relay1";
 my $closeRelay = "relay2";
@@ -79,24 +84,26 @@ sub OPEN()
 		printf("not opening because ops_safe_to_open says %f\n", $safety);
 		return -1;
 	}
-	my $sock = undef;
-	$sock = Net::Telnet->new (
-				Host 		=> $cbw_host,
-                            	Port 		=> $cbw_port,
-                            	Errmode 	=> "return",
-                            	Timeout 	=> 1,
-                            	Binmode 	=> 1,
-                            	Telnetmode 	=> 0
-                           );
-        #bad socet
-	return ( 0 , ()) unless $sock;
+	my $httpConnection = LWP::UserAgent->new;
 
-	$HTTP = sprintf( $comFormatStr, $openRelay, $state );
-	$sock->put( $HTTP );
-	$sock->recv( $resp, 1024 );
+	$httpConnection ->credentials(
+	    $cbw_host.":".$cbw_port,
+	    $cbw_realm,
+	    $cbw_user => $cbw_pass 
+	  );
 
+
+	#build the URL string to open the roof.
+        my $URL = sprintf( $urlFormatStr, $openRelay, $state );
 	
-	close( $sock );
+	#open the roof and get a response
+	my $resp = $httpConnection->get($URL)->content;
+
+	print $URL."\n";
+	print $resp."\n";
+        return (0, ("closeSwitch"=>-1 , "openSwitch"=>-1) ) unless $resp;
+
+	#return the parsed response
 	return ( 1, inputsFromXML( $resp ) );
 }
 
@@ -107,30 +114,33 @@ sub OPEN()
 #      the second is a hash of limit switch values
 # Description:
 # Interfaces with cbw module to close the superlotis roof
-# it then reads the xml string returned by the cbw socket
+# it then reads the xml string returned by the cbw HTTP
+# connection
 # Author: Scott Swindell
 # Date:   8/15/2014
 #######################################################
 sub CLOSE()
 {
-        my $sock = undef;
-        $sock = Net::Telnet->new (
-                                Host            => $cbw_host,
-                                Port            => $cbw_port,
-                                Errmode         => "return",
-                                Timeout         => 1,
-                                Binmode         => 1,
-                                Telnetmode      => 0
-                           );
-        return ( 0, () ) unless $sock;
+	my $httpConnection = LWP::UserAgent->new;
 
-        $HTTP = sprintf( $comFormatStr, $closeRelay, $state );
-        $sock->put( $HTTP );
-        $sock->recv( $resp, 1024 );
+	$httpConnection ->credentials(
+	    $cbw_host.":".$cbw_port,
+	    $cbw_realm,
+	    $cbw_user => $cbw_pass 
+	  );
 
 
-        close( $sock );
-        return ( 1, inputsFromXML( $resp ) );
+	#build the URL string to clsoe the roof.
+        my $URL = sprintf( $urlFormatStr, $closeRelay, $state );
+	
+	#Close the roof and get a response
+	my $resp = $httpConnection->get($URL)->content;
+
+	
+        return (0, ("closeSwitch"=>-1 , "openSwitch"=>-1) ) unless $resp;
+
+	#return the parsed response
+	return ( 1, inputsFromXML( $resp ) );
 
 
 }	
@@ -150,24 +160,27 @@ sub CLOSE()
 #######################################################
 sub STOP()
 {
-        my $sock = undef;
-        $sock = Net::Telnet->new (
-                                Host            => $cbw_host,
-                                Port            => $cbw_port,
-                                Errmode         => "return",
-                                Timeout         => 1,
-                                Binmode         => 1,
-                                Telnetmode      => 0
-                           );
-        return ( 0, () ) unless $sock;
+	my $httpConnection = LWP::UserAgent->new;
 
-        $HTTP = sprintf( $comFormatStr, $stopRelay, $state );
-        $sock->put( $HTTP );
-        $sock->recv( $resp, 1024 );
+	$httpConnection ->credentials(
+	    $cbw_host.":".$cbw_port,
+	    $cbw_realm,
+	    $cbw_user => $cbw_pass 
+	  );
 
 
-        close( $sock );
-        return ( 1, inputsFromXML( $resp ) );
+	#build the URL string to stop the roof.
+        my $URL = sprintf( $urlFormatStr, $stopRelay, $state );
+	
+	#Close the roof and get a response
+	my $resp = $httpConnection->get($URL)->content;
+
+	
+        return (0, ("closeSwitch"=>-1 , "openSwitch"=>-1) ) unless $resp;
+
+	#return the parsed response
+	return ( 1, inputsFromXML( $resp ) );
+
 
 
 }
@@ -212,20 +225,18 @@ sub inputsFromXML
 #####################################################
 sub getInputs
 {
-my $sock = undef;
-        $sock = Net::Telnet->new (
-                                Host            => $cbw_host,
-                                Port            => $cbw_port,
-                                Errmode         => "return",
-                                Timeout         => 1,
-                                Binmode         => 1,
-                                Telnetmode      => 0
-                           );
-        return (0, ("closeSwitch"=>-1 , "openSwitch"=>-1) ) unless $sock;
-	$HTTP = $querryStr;
-	$sock->put( $HTTP );
-	$sock->recv( $resp, 1024 );
+	my $httpConnection = LWP::UserAgent->new;
+
+	$httpConnection ->credentials(
+	    $cbw_host.":".$cbw_port,
+	    $cbw_realm,
+	    $cbw_user => $cbw_pass 
+	  );
+	
+	my $resp = $httpConnection->get($urlGetState)->content;
+       
 	return ( 1, inputsFromXML( $resp ) ) ;
+	
 }
 
 

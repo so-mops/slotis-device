@@ -22,7 +22,18 @@ class Boltwood:
 			
 		
 		return jdata
+	
+	def update_status_server(self):
+		jdata = self.getdata()
+		for (key, val) in jdata.iteritems():
+			soc = scottSock("localhost", 5135)
+			out = "set boltwood_{} {}\n".format(key, val)
+			print out
+			soc.send(out)
+			soc.close()
 
+		return jdata
+			
 
 	def getdata2(self):
 		"""Threshold for dayCond is too high so we figure it out here"""
