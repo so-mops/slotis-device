@@ -207,8 +207,8 @@ sub inputsFromXML
 	#logic is reversed 
 	#$closeSwitch = $closeSwitch ^ 1;
 	#$openSwitch = $openSwitch ^ 1;
-
-	return ("closeSwitch" => $closeSwitch, "openSwitch" => $openSwitch );
+	my %resp_hash = ( closeSwitch => $closeSwitch, openSwitch => $openSwitch );
+	return %resp_hash;
 }
 
 
