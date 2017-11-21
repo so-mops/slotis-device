@@ -1,0 +1,13 @@
+[Unit]
+
+Description= Script to shut the roof in unsafe conditions
+After = network.target
+
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/slotisSafe.py
+User=root
+
+[Install]
+WantedBy=default.target
