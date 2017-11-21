@@ -25,10 +25,11 @@ from scottSock import scottSock
 import requests
 import json
 import ephem
-from roof import SLroof; myroof = SLroof()
+#from roof import SLroof; myroof = SLroof()
 import time
 import datetime
 from slotis_device import bok, boltwood
+from slotis_device.roof import SLroof; myroof = SLroof()
 from webWeather import kpDewPoints,  kpWind, fourMeterStatus
 
 # THe webWeather code is a glorified web scraper, with 
@@ -161,7 +162,7 @@ def isHumanSafe():
 
 def boltwoodSafe():
 	b=boltwood.Boltwood()
-	return b.isSafe()
+	return b.isSafe(update_server=True)
 		
 
 def main():

@@ -28,7 +28,6 @@ class Boltwood:
 		for (key, val) in jdata.iteritems():
 			soc = scottSock("localhost", 5135)
 			out = "set boltwood_{} {}\n".format(key, val)
-			print out
 			soc.send(out)
 			soc.close()
 
@@ -59,8 +58,11 @@ class Boltwood:
 		
 		return jdata
 
-	def isSafe(self):
-		jdata = self.getdata()
+	def isSafe( self, update_server=False ):
+		if update_server:
+			jdata=self.update_status_server()
+		else:
+			jdata = self.getdata()
 		
 		if jdata["roofCloseRequested"] == 1:
 			return 0
