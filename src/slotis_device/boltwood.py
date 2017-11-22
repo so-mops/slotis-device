@@ -25,11 +25,14 @@ class Boltwood:
 	
 	def update_status_server(self):
 		jdata = self.getdata()
-		for (key, val) in jdata.iteritems():
-			soc = scottSock("localhost", 5135)
-			out = "set boltwood_{} {}\n".format(key, val)
-			soc.send(out)
-			soc.close()
+		try:
+			for (key, val) in jdata.iteritems():
+				soc = scottSock("localhost", 5135)
+				out = "set boltwood_{} {}\n".format(key, val)
+				soc.send(out)
+				soc.close()
+		except Exception as err:
+			print("Error talking to status server", err)
 
 		return jdata
 			

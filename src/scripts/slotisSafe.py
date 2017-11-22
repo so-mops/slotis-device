@@ -168,12 +168,13 @@ def boltwoodSafe():
 def main():
 	
 	
-	"""The Mainloop. Looks at various conditions and determines weather the
+	"""The Mainloop. Looks at various conditions and determines wehther the
 	Super LOTIS dome should be open. If not it issues a close command"""
 	l_mayall_is_open = None
 	l_bok_is_open = None
 	set_slotis("scott_closed_because", 'None')
 	while 1:
+		time.sleep(1.0)
 		t0=time.time()	
 		safe = True
 		concerns = []
@@ -267,7 +268,7 @@ def main():
 						time.sleep(5 )
 						print "closing roof"
 						myroof.closeRoof()
-						time.sleep(25)
+						time.sleep(45)
 					except Exception as err:
 						print "could not close because {}".format(err)
 
