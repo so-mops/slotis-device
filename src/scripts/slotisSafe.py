@@ -173,6 +173,7 @@ def main():
 	l_mayall_is_open = None
 	l_bok_is_open = None
 	set_slotis("scott_closed_because", 'None')
+	
 	while 1:
 		time.sleep(1.0)
 		t0=time.time()	
@@ -284,5 +285,6 @@ def log(msg):
 	fname='/home/scott/pyslotis.log'
 	fd = open(fname, 'a')
 	fd.write( "[{}] {}\n".format( time.ctime(), msg ) )
+
 
 main()
