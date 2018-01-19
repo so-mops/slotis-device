@@ -9,7 +9,7 @@ use roof qw( OPEN CLOSE STOP getInputs );
 use Net::Telnet;
 use Data::Dumper qw(Dumper);
 use status_client qw(ALL GET SET);
-
+use slotis_email qw(send);
 
 
 sub test_roof
@@ -132,6 +132,11 @@ elsif( $ARGV[0] eq "status_client" )
 		splice @args, 0,1;
 		test_status_client( @args  );
 	}
+}
+
+elsif( $ARGV[0] eq "email" )
+{
+	slotis_email::send("trsl\@as.arizona.edu", "test", "PREPARE TO BE SPAMMED \n --Scott Swindell" );
 }
 
 else
