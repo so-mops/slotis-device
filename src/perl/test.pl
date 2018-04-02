@@ -5,7 +5,7 @@ use warnings;
 # use Tk;
 # use Math::Trig;
 #use RRDs;
-use roof qw( OPEN CLOSE STOP getInputs );
+use roof qw( OPEN CLOSE STOP getInputs isSafe );
 use Net::Telnet;
 use Data::Dumper qw(Dumper);
 use status_client qw(ALL GET SET);
@@ -33,6 +33,17 @@ sub test_roof
 		my ($success, %status) = roof::getInputs;
 		print "Closed: ".$status{"closeSwitch"}."\n";
 		print "Opened: ".$status{"openSwitch"}."\n";
+	}
+	elsif ($test_what eq "isSafe")
+	{
+		if( roof::isSafe() )
+		{
+			print "Roof is safe"."\n";
+		}
+		else
+		{
+			print "Roof is not safe"."\n";
+		}
 	}
 
 	else

@@ -22,7 +22,8 @@ use Net::Telnet;
 use Exporter qw(import);
 use LWP::UserAgent;
 use Data::Dumper qw(Dumper);
-
+use status_client qw(GET);
+use Scalar::Util qw(looks_like_number);
 our @EXPORT_OK = qw( OPEN CLOSE STOP getInputs isSafe );
 
 # This is the HTTP format string to send
@@ -81,7 +82,7 @@ sub OPEN()
 	my $safety = isSafe();
 	if ( isSafe()  == 0.0 )
 	{
-		printf("not opening because ops_safe_to_open says %f\n", $safety);
+		printf("Not opening because roof not safe says %f\n", $safety);
 		return -1;
 	}
 	my $httpConnection = LWP::UserAgent->new;
@@ -239,46 +240,46 @@ sub getInputs
 	
 }
 
+sub safe_by_key
+{
+	my ($safe_key) = @_;
+        my $safe = status_client::GET($safe_key);
+        if ( looks_like_number($safe) )
+	{
+		if( $safe == 1 )
+		{
+			return 1.0;
+		}
+		else
+		{
+			return 0.0;
+		}
+	}
+	else
+	{
+		#Its not a number
+		return 1.0;
+	}
+}
+
+sub isSafe
+{
+
+	
+	if( !safe_by_key("ops_safe_to_open") || !safe_by_key("safe_to_reopen") || !safe_by_key("scott_safe_to_open") )
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
 
 
-1;
 
 
-
-# The SLOTIS status socket server.                     
-my $slotis_status_server_host = "slotis.kpno.noao.edu";
-my $slotis_status_server_port = 5135;                  
                                                        
 
-# Sends the status information to the status server.             
-sub isSafe{                                       
-                                                                 
-  # The command to set a value in the status server.             
-  my $cmd = "";       
-  my $val = "-1.0"; 
-  my $key = "-1.0";                                          
-  # Connect to the status socket server.                         
-  my $sock = Net::Telnet->new (Host => $slotis_status_server_host,  
-                            Port =>  $slotis_status_server_port, 
-                            Errmode => "return",                 
-                            Timeout => 1,                        
-                            Binmode => 1,                        
-                            Telnetmode => 0                      
-                           );                                    
 
-	my $resp = 0.0;
-	if ( $sock ) {
-		$cmd = "get ops_safe_to_open\n";                     
-		my $rtn_status = $sock->put($cmd) if length($cmd) > 0;     
-		# put() returns 1 if all data was successfully written.    
-		# print $cmd if $debug;                                    
-		print "Error writing to status server\n" unless $rtn_status; 
-		# Returning the .EOF                                       
-		my $line = $sock->getline();
-		($key, $val) = split / /, $line;
-		
-	}                                                            
-	$sock->close() if $sock;                                       
-	undef($sock);                                                  
-	return $val;
-}
+

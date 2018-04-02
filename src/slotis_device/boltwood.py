@@ -9,6 +9,7 @@ from sqlalchemy import Column, Integer, String, DateTime, SmallInteger, Float
 import datetime
 import pytz
 import json
+from config import config as cfg; Config = cfg()
 
 SQLDB = "/home/scott/db/slotis.db"
 TBLNM = 'boltwood'
@@ -20,7 +21,7 @@ Base = declarative_base( )
 
 
 class Boltwood:
-	def __init__(self, ip=BWIP, port=BWPORT, sqldb=SQLDB, tblname=TBLNM):
+	def __init__( self, ip=BWIP, port=BWPORT, sqldb=SQLDB, tblname=TBLNM ):
 		self.ip = ip
 		self.port = port
 		self.datamap = {}
@@ -63,10 +64,14 @@ class Boltwood:
 	def to_sql( self, data=None ):
 		if data is None:
 			data = self.getdata()
-		session = BoltwoodSQL.bounded_session()
-		session.add(BoltwoodSQL( **data ))
-		session.commit()
-		session.close()
+		try:
+			session = BoltwoodSQL.bounded_session()
+			session.add(BoltwoodSQL( **data ))
+			session.commit()
+			session.close()
+		except Exception as err:
+			
+			print( datetime.datetime.now().isoformat(), "Could not write Boltwood to database", err  )
 
 			
 	
@@ -91,11 +96,19 @@ class Boltwood:
 			jdata = json.loads(data)
 			jdata["roofCloseRequested"] = 0
 
-			if int( jdata["daylightADC"]) > 750:
+			if int( jdata["daylightADC"]) > Config["thresholds"]["boltwood"]["daylightADC"]:
 				jdata["roofCloseRequested"] = 1
 			
-			elif int( jdata["cloudCond"] ) > 2:
+
+			elif int( jdata["skyMinusAmbientTemperature"] < Config["thresholds"]["boltwood"]["skyMinusAmbientTemperature"] ):
 				jdata["roofCloseRequested"] = 1
+
+			elif int( jdata["windSpeed"] > Config["thresholds"]["boltwood"]["windSpeed"] ):
+				jdata["roofCloseRequested"] = 1	
+
+			elif int( jdata["relativeHumidityPercentage"] > Config["thresholds"]["boltwood"]["relativeHumidityPercentage"] ):
+				jdata["roofCloseRequested"] = 1
+
 			
 			s.close()
 		except Exception as err:
@@ -112,7 +125,7 @@ class Boltwood:
 		if update_server:
 			jdata=self.update_status_server()
 		else:
-			jdata = self.getdata()
+			jdata = self.getdata2()
 		
 		if log:
 			self.to_sql(jdata)

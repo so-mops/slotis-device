@@ -27,10 +27,11 @@ import json
 import ephem
 #from roof import SLroof; myroof = SLroof()
 import time
-import datetime
+import datetime, dateutil.parser
 from slotis_device import bok, boltwood
 from slotis_device.roof import SLroof; myroof = SLroof()
 from webWeather import kpDewPoints,  kpWind, fourMeterStatus
+
 
 # THe webWeather code is a glorified web scraper, with 
 # little glory. This should be replace with an actuall weather
@@ -173,6 +174,10 @@ def main():
 	l_mayall_is_open = None
 	l_bok_is_open = None
 	set_slotis("scott_closed_because", 'None')
+	set_slotis( "closed_at", "None" )
+	set_slotis( "safe_to_reopen", "None" )
+
+
 	
 	while 1:
 		time.sleep(1.0)
@@ -212,12 +217,6 @@ def main():
 			print "mayall switched to unsafe"
 			safe = False
 
-		if bok_is_open == False and l_bok_is_open == True:
-			dt = datetime.datetime.now()
-			if dt.hour > 3 and dt.hour< 6:
-				pass
-				#concerns.append("bok just closed")
-				#safe = False
 
 		
 		#if bok_is_too_humid:
@@ -231,12 +230,21 @@ def main():
 		
 		if safe:
 			# we are just fine continue operating
-			set_slotis('scott_safe_to_open', '1.0')
-			for n in range( 4 ):
-				set_slotis('scott_concern{}'.format(n), "None" )
+			set_slotis( 'scott_safe_to_open', '1.0' )
+			closed_at_str = get_slotis( "closed_at" )
+			if closed_at_str != "None":
+				closed_at_dt = dateutil.parser.parse(closed_at_str)
+				if  ( datetime.datetime.now() - closed_at_dt > datetime.timedelta(hours=1) ):
+					 set_slotis( 'safe_to_reopen', '1.0' )
+				else:
+					 set_slotis( 'safe_to_reopen', '0.0' )
+			else:
+				set_slotis( 'safe_to_reopen', '1.0' )
+			
+
 
 		else:
-			set_slotis('scott_safe_to_open', '0.0')
+			
 			#It is unsafe see if we need to close
 			try:
 				roof_inputs = myroof.getInputs()
@@ -245,8 +253,12 @@ def main():
 				print "roof error", err
 
 			if roof_inputs['opened'] == 1:
+
 				#We are open so lets close
 				if roof_inputs['closed'] == 0:
+					set_slotis( 'scott_safe_to_open', '0.0' )
+					set_slotis( "closed_at", datetime.datetime.now().isoformat() )
+
 					print "Closing the roof.", concerns, time.ctime()
 					try:
 						set_slotis("scott_closed_because", str(concerns))
