@@ -29,7 +29,7 @@ def bokDomeStatus():
         'input2state'   :'dome_closed',
 	}
 
-	data = GetCBWData(url="http://140.252.86.128:42744/state.xml", cbwmap=cbwmap )
+	data = GetCBWData(url="http://140.252.86.113:42744/state.xml", cbwmap=cbwmap )
 
 	return data
 

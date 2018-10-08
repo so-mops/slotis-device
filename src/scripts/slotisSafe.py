@@ -191,6 +191,7 @@ def main():
 		#bok_is_too_humid = bokIsTooHumid()
 		is_human_safe = isHumanSafe()
 		boltwood_is_safe = boltwoodSafe()
+		
 
 		instant_status = {
 			'isRaining': is_raining, 
@@ -232,14 +233,23 @@ def main():
 			# we are just fine continue operating
 			set_slotis( 'scott_safe_to_open', '1.0' )
 			closed_at_str = get_slotis( "closed_at" )
-			if closed_at_str != "None":
+			if closed_at_str == "None":
+				# we never closed so lets actively set the 
+				# safe to reopen bit high.
+				set_slotis( 'safe_to_reopen', '1.0' )
+
+			elif closed_at_str is None:
+				# this probably is meaningless because
+				# if the closed_at_str is NoneType then
+				# the slotis server isn't running anyway
+				set_slotis( 'safe_to_reopen', '0.0' )
+				
+			else:
 				closed_at_dt = dateutil.parser.parse(closed_at_str)
-				if  ( datetime.datetime.now() - closed_at_dt > datetime.timedelta(hours=1) ):
+				if  ( datetime.datetime.now() - closed_at_dt > datetime.timedelta(minutes=30) ):
 					 set_slotis( 'safe_to_reopen', '1.0' )
 				else:
 					 set_slotis( 'safe_to_reopen', '0.0' )
-			else:
-				set_slotis( 'safe_to_reopen', '1.0' )
 			
 
 

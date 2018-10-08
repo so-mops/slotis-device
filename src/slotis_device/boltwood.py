@@ -125,7 +125,7 @@ class Boltwood:
 		if update_server:
 			jdata=self.update_status_server()
 		else:
-			jdata = self.getdata2()
+			jdata = self.getdata()
 		
 		if log:
 			self.to_sql(jdata)
