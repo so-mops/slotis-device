@@ -161,6 +161,17 @@ def isHumanSafe():
 
 	return retn
 
+def ignoreNotSafeToOpen():
+	try:
+		ignore = float(get_slotis(ignore_safety))
+	except Exception as err:
+		print(err)
+		return 
+
+
+	if ignore == 1:
+		print
+
 def boltwoodSafe():
 	b=boltwood.Boltwood()
 	return b.isSafe(update_server=True)

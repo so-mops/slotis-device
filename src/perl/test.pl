@@ -10,7 +10,8 @@ use Net::Telnet;
 use Data::Dumper qw(Dumper);
 use status_client qw(ALL GET SET);
 use slotis_email qw(send);
-
+use DateTime;
+use DateTime::Format::ISO8601;
 
 sub test_roof
 {
@@ -148,6 +149,34 @@ elsif( $ARGV[0] eq "status_client" )
 elsif( $ARGV[0] eq "email" )
 {
 	slotis_email::send("trsl\@as.arizona.edu", "test", "PREPARE TO BE SPAMMED \n --Scott Swindell" );
+}
+
+elsif( $ARGV[0] eq "time" )
+{
+	my $dt = DateTime->now;
+	if( $ARGV[1] eq "safe")
+	{
+		
+		status_client::SET( "safe_for_30", $dt->strftime( '%Y-%m-%d-%H-%M-%S' ) );
+	}
+	else
+	{
+		my $unsafe_delay = status_client::GET( "safe_for_30" );
+		my @list = split("-", $unsafe_delay);
+		my $unsafe_time = DateTime->new(
+			year		=>$list[0],
+			month		=>$list[1], 
+			day		=>$list[2],
+			hour		=>$list[3], 
+			minute		=>$list[4], 
+			second		=>$list[5], 
+			nanosecond	=>0
+		);
+		my $dur = $dt-$unsafe_time;
+		print $dur->in_units("minutes");
+		
+	}
+	
 }
 
 else

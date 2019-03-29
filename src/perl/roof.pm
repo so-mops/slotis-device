@@ -25,6 +25,8 @@ use Data::Dumper qw(Dumper);
 use status_client qw(GET);
 use Scalar::Util qw(looks_like_number);
 our @EXPORT_OK = qw( OPEN CLOSE STOP getInputs isSafe );
+use DateTime;
+
 
 # This is the HTTP format string to send
 # an open close or stop command to the
@@ -262,11 +264,34 @@ sub safe_by_key
 	}
 }
 
+
+sub isSafeFor30
+{
+	#check the safety suppressor that expires in 30 mins	
+	my $unsafe_delay = status_client::GET( "safe_for_30" );
+	my @list = split("-", $unsafe_delay);
+	my $unsafe_time = DateTime->new(
+		year		=>$list[0],
+		month		=>$list[1], 
+		day		=>$list[2],
+		hour		=>$list[3], 
+		minute		=>$list[4], 
+		second		=>$list[5], 
+		nanosecond	=>0
+	);
+	my $dur = $dt-$unsafe_time;
+	#return true if the safe_for_30 timestamp is less than 30 minutes old
+	return ( $dur->in_units("minutes") <30 );
+
+}
+
 sub isSafe
 {
-
-	
-	if( !safe_by_key("ops_safe_to_open") || !safe_by_key("safe_to_reopen") || !safe_by_key("scott_safe_to_open") )
+	if( isSafeFor30() )
+	{
+		return 1;
+	}
+	elsif( !safe_by_key("ops_safe_to_open") || !safe_by_key("safe_to_reopen") || !safe_by_key("scott_safe_to_open") )
 	{
 		return 0;
 	}
