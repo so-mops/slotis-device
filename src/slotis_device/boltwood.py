@@ -150,6 +150,7 @@ class BoltwoodSQL(Base):
 	timestamp = Column( DateTime() )
 	wetSensor = Column( SmallInteger() )
 	windSpeed = Column( Float() )
+	ambientTemperature = Column( Float() )
 
 	def __init__(self, **kwargs):
 		ts = pytz.UTC.localize( datetime.datetime.strptime(kwargs["timestamp"], "%Y-%m-%dT%H:%M:%SZ") )

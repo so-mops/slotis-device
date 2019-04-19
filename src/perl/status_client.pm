@@ -65,6 +65,11 @@ sub ALL()
 
 sub GET
 {
+	eval 
+	{# run this in a timeout otherwise it will hang
+	# if the key does not exist
+	local $SIG{ALRM} = sub { die "alarm\n"};
+	alarm(1);
 	my ($keyword) = @_;
 	# initialize host and port
 	my $host = 'localhost';
@@ -80,15 +85,18 @@ sub GET
 	);
 	die unless $sock;
 
-	
 	$sock->send("get $keyword\n");
-
 	my $keyval;
 	$sock->recv($keyval, 100);
 	chomp($keyval);
 	my ($key, $val) = split / /, $keyval,  2;
 	$sock->close();
 	return $val
+	};
+	if ($@)
+	{
+		return "";
+	}
 
 }
 

@@ -174,7 +174,6 @@ sub STOP()
 
 	#build the URL string to stop the roof.
         my $URL = sprintf( $urlFormatStr, $stopRelay, $state );
-	
 	#Close the roof and get a response
 	my $resp = $httpConnection->get($URL)->content;
 
@@ -269,6 +268,11 @@ sub isSafeFor30
 {
 	#check the safety suppressor that expires in 30 mins	
 	my $unsafe_delay = status_client::GET( "safe_for_30" );
+	if ( $unsafe_delay eq "" )
+	{
+		return 0;
+	}
+	my $dt = DateTime->now;
 	my @list = split("-", $unsafe_delay);
 	my $unsafe_time = DateTime->new(
 		year		=>$list[0],
@@ -287,8 +291,8 @@ sub isSafeFor30
 
 sub isSafe
 {
-	if( isSafeFor30() )
-	{
+	if( isSafeFor30())
+	{# 30 min safety suppressor
 		return 1;
 	}
 	elsif( !safe_by_key("ops_safe_to_open") || !safe_by_key("safe_to_reopen") || !safe_by_key("scott_safe_to_open") )

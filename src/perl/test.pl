@@ -59,7 +59,7 @@ sub test_roof
 sub test_status_client
 {
 	my ($test_what, $var1, $var2) = @_;
-	print "args are $test_what $var1 $var2\n";
+	#print "args are $test_what $var1 $var2\n";
 	if ($test_what eq "GET")
 	{
 		if( ! defined $var1)
