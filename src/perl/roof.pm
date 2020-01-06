@@ -82,6 +82,7 @@ my $state = 2;
 sub OPEN()
 {
 	my $safety = isSafe();
+         $safety = 1.0;
 	if ( isSafe()  == 0.0 )
 	{
 		printf("Not opening because roof not safe says %f\n", $safety);
@@ -174,8 +175,9 @@ sub STOP()
 
 	#build the URL string to stop the roof.
         my $URL = sprintf( $urlFormatStr, $stopRelay, $state );
+	my $resp;
 	#Close the roof and get a response
-	my $resp = $httpConnection->get($URL)->content;
+	#my $resp = $httpConnection->get($URL)->content;
 
 	
         return (0, ("closeSwitch"=>-1 , "openSwitch"=>-1) ) unless $resp;
@@ -291,8 +293,8 @@ sub isSafeFor30
 
 sub isSafe
 {
-	if( isSafeFor30())
-	{# 30 min safety suppressor
+	if( isSafeFor30() )
+	{
 		return 1;
 	}
 	elsif( !safe_by_key("ops_safe_to_open") || !safe_by_key("safe_to_reopen") || !safe_by_key("scott_safe_to_open") )
