@@ -292,6 +292,7 @@ def main():
 					# We are open but not all the way, possible moving
 					# Lets issue a stop command and then close. 
 					print "Stopping then closing the roof."
+					print concerns
 					try:
 						log( str(concerns) )
 						myroof.STOP()
