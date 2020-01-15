@@ -82,7 +82,6 @@ my $state = 2;
 sub OPEN()
 {
 	my $safety = isSafe();
-         $safety = 1.0;
 	if ( isSafe()  == 0.0 )
 	{
 		printf("Not opening because roof not safe says %f\n", $safety);
@@ -293,11 +292,11 @@ sub isSafeFor30
 
 sub isSafe
 {
-	if( isSafeFor30() )
-	{
-		return 1;
-	}
-	elsif( !safe_by_key("ops_safe_to_open") || !safe_by_key("safe_to_reopen") || !safe_by_key("scott_safe_to_open") )
+#	if( isSafeFor30() )
+#	{
+#		return 1;
+#	}
+	if( !safe_by_key("ops_safe_to_open") || !safe_by_key("safe_to_reopen") || !safe_by_key("scott_safe_to_open") )
 	{
 		return 0;
 	}
